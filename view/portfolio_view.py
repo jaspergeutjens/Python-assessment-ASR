@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 import yfinance as yf
+import numpy as np
 
 class PortfolioView:
     def show_main_menu(self):
@@ -49,19 +50,29 @@ class PortfolioView:
         plt.xlabel("Date")
         plt.ylabel("Price")
         plt.grid()
-        # plt.tight_layout()
         plt.show()
 
     def display_portfolio(self, df: pd.DataFrame):
         print("\n=== Portfolio Overview ===")
-        print(df[['ticker', 'sector', 'asset_class', 'quantity', 'purchase_price', 'current_price', 'transaction_value', 'current_value']])
-        total = df['current_value'].sum()
-        print(f"\nTotal Portfolio Value: €{total:,.2f}")
+        print(df)
+        total_value = df['current_value'].sum()
+        total_pnl = df['PnL'].sum()
+        print(f"\nTotal Portfolio Value: €{total_value:,.2f}")
+        print(f"\nTotal Portfolio PnL: €{total_pnl:,.2f}")
 
-    def plot_simulation(self, simulation_results):
-        plt.hist(simulation_results, bins=100, alpha=0.7)
-        plt.title("Simulated Portfolio Value Distribution (15 Years)")
-        plt.xlabel("Portfolio Value")
+    def plot_simulation(self, simulation_results, plot_choice, alpha):
+        VaR = np.percentile(simulation_results, (1 - alpha) * 100)
+        ES = simulation_results[simulation_results <= VaR].mean()
+        plt.hist(simulation_results, bins=100, alpha=0.7, color='skyblue', edgecolor='grey')
+
+        if plot_choice == 'var':
+            plt.axvline(VaR, color='red', linestyle='dashed', linewidth=1.3, label=f'VaR {int(alpha * 100)}%: €{VaR:,.2f}')
+        elif plot_choice == 'es':
+            plt.axvline(ES, color='green', linestyle='dashed', linewidth=1.3, label=f'ES {int(alpha * 100)}%: €{ES:,.2f}')
+        
+        plt.legend(loc='upper right', frameon=True, fontsize=10)
+        plt.title(f"Simulated Portfolio Value Distribution ({int(alpha * 100)}% Confidence)")
+        plt.xlabel("Portfolio Value (EUR)")
         plt.ylabel("Frequency")
         plt.grid(True)
         plt.tight_layout()

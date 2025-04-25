@@ -20,6 +20,7 @@ class PortfolioModel:
         df = pd.DataFrame(self.assets)
         df['transaction_value'] = df['quantity'] * df['purchase_price']
         df['current_value'] = df['quantity'] * df['current_price']
+        df['PnL'] = df['current_value'] - df['transaction_value']
         return df
 
     def simulate(self, years=15, simulations=10000):
@@ -30,9 +31,7 @@ class PortfolioModel:
             S0 = asset['current_price']
             steps = years
             dt = 1
-            paths = np.exp(
-                np.cumsum((mu - 0.5 * sigma**2) * dt + sigma * np.random.randn(simulations, steps) * np.sqrt(dt), axis=1)
-            )
+            paths = np.exp(np.cumsum((mu - 0.5 * sigma**2) * dt + sigma * np.random.randn(simulations, steps) * np.sqrt(dt), axis=1))
             final_values = S0 * paths[:, -1] * asset['quantity']
             results.append(final_values)
         total = np.sum(results, axis=0)
