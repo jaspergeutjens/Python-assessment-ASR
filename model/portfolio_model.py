@@ -8,9 +8,11 @@ class PortfolioModel:
         self.assets = []
 
     def add_asset(self, asset_data):
+        # add asset data 
         self.assets.append(asset_data)
 
     def update_prices(self):
+        # Determine current asset price and current value of trade, also store information
         for asset in self.assets:
             ticker = yf.Ticker(asset['ticker'])
             current_price = ticker.history(period='1d')['Close'].iloc[-1]
@@ -18,6 +20,7 @@ class PortfolioModel:
             asset['current_value'] = current_price * asset['quantity']
 
     def get_portfolio_summary(self):
+        # Return portfolio information
         df = pd.DataFrame(self.assets)
         df['transaction_value'] = df['quantity'] * df['purchase_price']
         df['current_value'] = df['quantity'] * df['current_price']
@@ -41,13 +44,14 @@ class PortfolioModel:
         return np.sum(results, axis=1).flatten()
         
     def estimate_mu_sigma(ticker):
+        # Estimate mu and sigma of a specific asset
         end_date = datetime.today()
-        # 10 years ago from today, approximately
-        start_date = end_date - timedelta(days=10*365)  
+        # 5 years ago from today, approximately
+        start_date = end_date - timedelta(days=5*365)  
         start_date = start_date.strftime('%Y-%m-%d')
         end_date = end_date.strftime('%Y-%m-%d')
         # Download price data
-        df = yf.download(ticker, start=start_date, end=end_date) 
+        df = yf.download(ticker, start=start_date, end=end_date, progress=False, auto_adjust=True) 
         if df.empty:
             raise ValueError("No data downloaded. Check the ticker or dates.")
         prices = df['Close']
@@ -61,3 +65,7 @@ class PortfolioModel:
         mu_annual = float(mu_daily * trading_days)
         sigma_annual = float(sigma_daily * np.sqrt(trading_days))
         return mu_annual, sigma_annual
+    
+    def risk_measure(simulation_results, alpha):
+        adjusted_VaR = np.percentile(simulation_results, (1 - alpha) * 100)
+        return adjusted_VaR

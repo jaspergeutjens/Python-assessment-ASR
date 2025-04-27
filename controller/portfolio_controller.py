@@ -8,6 +8,7 @@ class PortfolioController:
 
     def run(self):
         while True:
+            # Show the control window
             self.view.show_main_menu()
             choice = input("Please choose one of the options above by entering the corresponding number (or Q): ").strip()
             if choice == "1":
@@ -39,19 +40,15 @@ class PortfolioController:
     def simulate_portfolio(self):
         self.model.update_prices()
         simulation_results = self.model.simulate()
-        while True:
-            plot_choice = input("Which risk measure do you want to use, Value at Risk or Expected Shortfall? (Enter 'VaR' or 'ES'): ").strip().lower()
-            if plot_choice in {'var', 'es'}:
-                break
-            else:
-                print("Invalid choice. Please enter 'VaR' or 'ES'.")
+        # Allows the user to specify the confidence level for the risk measure
         while True:
             try:
-                alpha = float(input("Please enter the alpha for VaR/ES (e.g., 0.99 for 99% confidence): ").strip())
+                alpha = float(input("Please enter the alpha/confidence level for the risk measure (e.g., 0.99 for 99% confidence): ").strip())
                 if 0 < alpha < 1:
                     break
                 else:
                     print("Alpha must be between 0 and 1. Please try again.")
             except ValueError:
                 print("Invalid input. Please enter a valid number for alpha.")
-        self.view.plot_simulation(simulation_results, plot_choice, alpha)
+        self.view.display_risk_measure(simulation_results, alpha, self.model.get_portfolio_summary())
+        self.view.plot_simulation(simulation_results)
