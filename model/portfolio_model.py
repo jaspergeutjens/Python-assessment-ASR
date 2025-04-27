@@ -67,5 +67,6 @@ class PortfolioModel:
         return mu_annual, sigma_annual
     
     def risk_measure(simulation_results, alpha):
+        # Calculates a risk measure, sort of similar to a VaR, which refers to a loss distribution
         adjusted_VaR = np.percentile(simulation_results, (1 - alpha) * 100)
         return adjusted_VaR

@@ -1,36 +1,42 @@
-# Python-assessment-ASR-application procedure
-Create a command-line interface (CLI) application to track a simple investment portfolio. The 
-application should at least allow users to: 
-  1. Add assets to the portfolio, specifying the asset ticker (e.g.. AAPL, MSFT), the sector, asset 
-     class, quantity, and purchase price. 
-  2. Show the current and historical price of each asset ticker and be able to create a graph for 
-     each ticker (or a combination of tickers). 
-  3. View the current portfolio, displaying each asset's name, sector, asset class, quantity, 
-     purchase price,  transaction value and current value. 
-  4. See calculations for the total portfolio value and the (relative) weights of each asset including 
-     the option to see the same per asset class and sector. 
-  5. Be able to perform a simulation over the upcoming fifteen years for the portfolio, 
-     demonstrating the impact of risk and uncertainty. Assume 100.000 simulated paths. 
-     Use your own creativity to extend the functionality. You are allowed to use a LLM such as ChatGPT to 
-     generate ideas.
-     
-## Technical Requirements 
-The following topics are the bare minimum we expect within the assignment, feel free to add 
-additional tools to your project. 
-  1. Model-View-Controller (MVC) Architecture: 
-     The application must adhere to the Model-View-Controller software design pattern: 
-       a) Model: stores and manipulates asset information and contains any calculations that 
-          are done on this data such as the calculation of weights and other measures. 
-       b) View: handles the creation of tables, graphs and optionally the CLI interface itself. 
-       c) Controller: manages the flow of data between the Model and View, handling user 
-          commands. 
-  2. Version Control (Git): The project must be managed using Git, with clear commit messages. 
-  3. Dependency Management: The project must have its dependencies specified either through 
-     a requirements.txt or through Poetry. 
-  4. Programming Language: The preferred programming language is Python but if you are more 
-     proficient in a different language such as C++, C# or R this is also a possibility.
-     
-## Deliverables 
-Share with us a public repository on a platform such as GitHub, GitLab or Bitbucket and provide an 
-explanation how to use your project. If this is not feasible, a ZIP-file also suffices. It is also important 
-that we are able to run the application with your instructions. 
+# Portfolio Tracker
+
+## Overview
+
+The **Portfolio Tracker** is a Python-based application that helps users manage and simulate their financial portfolio. It allows users to:
+
+- Add assets to their portfolio
+- View current and historical asset prices
+- Simulate portfolio performance over 15 years
+- View portfolio summaries, including risk measures
+
+The program uses real-time financial data from Yahoo Finance and simulates asset price behavior using Geometric Brownian Motion (GBM).
+
+---
+
+## Files
+
+- `main.py`: The entry point of the application. It initializes and runs the `PortfolioController`.
+- `portfolio_controller.py`: The controller that handles user inputs and coordinates between the model and view.
+- `portfolio_model.py`: Contains the logic for managing portfolio data, running simulations, and calculating risk measures.
+- `portfolio_view.py`: Manages user interface and displays information about the portfolio, asset prices, and simulation results.
+
+---
+
+## Installation
+
+1. Clone or download this repository.
+
+2. Install required dependencies. Run the following command:
+
+   pip install -r requirements.txt
+
+3. To run the application, simply execute main.py, the CLI will automatically start.
+
+4. To quit the application, simply choose the Quit option.
+
+---
+
+### Notes:
+
+1. **Data Source**: The application uses **Yahoo Finance** (via the `yfinance` package) to fetch current and historical prices of assets. Make sure you have a working internet connection for the app to function properly.
+2. **Simulations**: The simulation uses **Geometric Brownian Motion (GBM)** to model the future price behavior of assets. The portfolio simulation is based on a Monte Carlo method, running 100,000 simulations by default.

@@ -77,7 +77,9 @@ class PortfolioView:
         plt.show()
     
     def display_risk_measure(self, simulation_results, alpha, df: pd.DataFrame):
+        # Current portfolio value
         current_value = df['current_value'].sum()
+        # Risk measure, sort of similar to a VaR, which refers to a loss distribution
         adjusted_VaR = PortfolioModel.risk_measure(simulation_results, alpha)
         print(f"\nWith {100*alpha}% probability, your portfolio value in 15 years will not be smaller than {adjusted_VaR}.")
         print(f"Note that the current value of your portfolio is equal to €{current_value:,.2f}.")
