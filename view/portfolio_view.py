@@ -63,13 +63,11 @@ class PortfolioView:
     def plot_simulation(self, simulation_results, plot_choice, alpha):
         VaR = np.percentile(simulation_results, (1 - alpha) * 100)
         ES = simulation_results[simulation_results <= VaR].mean()
-        plt.hist(simulation_results, bins=100, alpha=0.7, color='skyblue', edgecolor='grey')
-
+        plt.hist(simulation_results, bins=1000, alpha=0.7, color='skyblue', edgecolor='grey')
         if plot_choice == 'var':
             plt.axvline(VaR, color='red', linestyle='dashed', linewidth=1.3, label=f'VaR {int(alpha * 100)}%: €{VaR:,.2f}')
         elif plot_choice == 'es':
-            plt.axvline(ES, color='green', linestyle='dashed', linewidth=1.3, label=f'ES {int(alpha * 100)}%: €{ES:,.2f}')
-        
+            plt.axvline(ES, color='red', linestyle='dashed', linewidth=1.3, label=f'ES {int(alpha * 100)}%: €{ES:,.2f}')
         plt.legend(loc='upper right', frameon=True, fontsize=10)
         plt.title(f"Simulated Portfolio Value Distribution ({int(alpha * 100)}% Confidence)")
         plt.xlabel("Portfolio Value (EUR)")

@@ -1,6 +1,7 @@
 import yfinance as yf
 import pandas as pd
 import numpy as np
+from datetime import datetime, timedelta
 
 class PortfolioModel:
     def __init__(self):
@@ -23,16 +24,40 @@ class PortfolioModel:
         df['PnL'] = df['current_value'] - df['transaction_value']
         return df
 
-    def simulate(self, years=15, simulations=10000):
-        results = []
+    def simulate(self, years=15, simulations=100000):
+        # Set a seed, this implies that it is assumed that the shocks to asset prices here are driven by the same Brownian Motion
+        np.random.seed(42)
+        unique_assets = {}
         for asset in self.assets:
-            mu = 0.07  
-            sigma = 0.15  
-            S0 = asset['current_price']
-            steps = years
-            dt = 1
-            paths = np.exp(np.cumsum((mu - 0.5 * sigma**2) * dt + sigma * np.random.randn(simulations, steps) * np.sqrt(dt), axis=1))
-            final_values = S0 * paths[:, -1] * asset['quantity']
-            results.append(final_values)
-        total = np.sum(results, axis=0)
-        return total
+            unique_assets.setdefault(asset["ticker"], {'quantity': 0, 'current_price': asset['current_price']})
+            unique_assets[asset["ticker"]]['quantity'] += asset['quantity']
+        # Simulate asset values
+        results = np.zeros((simulations, len(unique_assets)))
+        for idx, (ticker, data) in enumerate(unique_assets.items()):
+            mu, sigma = PortfolioModel.estimate_mu_sigma(ticker)
+            final_values = data['current_price'] * np.exp((mu - 0.5 * sigma**2) * years + sigma * np.sqrt(years) * np.random.randn(simulations))
+            results[:, idx] = final_values * data['quantity']
+        # Return the summed portfolio values
+        return np.sum(results, axis=1).flatten()
+        
+    def estimate_mu_sigma(ticker):
+        end_date = datetime.today()
+        # 10 years ago from today, approximately
+        start_date = end_date - timedelta(days=10*365)  
+        start_date = start_date.strftime('%Y-%m-%d')
+        end_date = end_date.strftime('%Y-%m-%d')
+        # Download price data
+        df = yf.download(ticker, start=start_date, end=end_date) 
+        if df.empty:
+            raise ValueError("No data downloaded. Check the ticker or dates.")
+        prices = df['Close']
+        arithmetic_returns = (prices / prices.shift(1)) - 1
+        arithmetic_returns = arithmetic_returns.dropna()
+        # Estimate daily drift and volatility
+        mu_daily = arithmetic_returns.mean()
+        sigma_daily = arithmetic_returns.std()
+        # Annualize the drift and volatility (assuming 252 trading days)
+        trading_days = 252
+        mu_annual = float(mu_daily * trading_days)
+        sigma_annual = float(sigma_daily * np.sqrt(trading_days))
+        return mu_annual, sigma_annual

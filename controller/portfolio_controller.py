@@ -39,7 +39,6 @@ class PortfolioController:
     def simulate_portfolio(self):
         self.model.update_prices()
         simulation_results = self.model.simulate()
-
         while True:
             plot_choice = input("Which risk measure do you want to use, Value at Risk or Expected Shortfall? (Enter 'VaR' or 'ES'): ").strip().lower()
             if plot_choice in {'var', 'es'}:
@@ -55,5 +54,4 @@ class PortfolioController:
                     print("Alpha must be between 0 and 1. Please try again.")
             except ValueError:
                 print("Invalid input. Please enter a valid number for alpha.")
-
         self.view.plot_simulation(simulation_results, plot_choice, alpha)
