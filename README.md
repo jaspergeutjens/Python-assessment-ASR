@@ -7,7 +7,7 @@ The **Portfolio Tracker** is a Python-based application that helps users manage 
 - Add assets to their portfolio
 - View current and historical asset prices
 - Simulate portfolio performance over 15 years
-- View portfolio summaries, including risk measures
+- View portfolio summaries, including weights and risk measures
 
 The program uses real-time financial data from Yahoo Finance and simulates asset price behavior using Geometric Brownian Motion (GBM).
 
