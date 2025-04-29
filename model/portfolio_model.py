@@ -77,10 +77,11 @@ class PortfolioModel:
     def get_portfolio_weights(self, level):
         df = pd.DataFrame(self.assets)
         total_value = df['current_value'].sum()
+        # Grouping rows based on ticker, asset class or sector
         if level == "pf":
-            df = df.copy()
-            df['weight'] = df['current_value'] / total_value
-            return df[['ticker', 'current_value', 'weight']]
+            grouped = df.groupby('ticker')['current_value'].sum().reset_index()
+            grouped['weight'] = grouped['current_value'] / total_value
+            return grouped[['ticker', 'current_value', 'weight']]
         elif level == "ac":
             grouped = df.groupby('asset_class')['current_value'].sum().reset_index()
             grouped['weight'] = grouped['current_value'] / total_value

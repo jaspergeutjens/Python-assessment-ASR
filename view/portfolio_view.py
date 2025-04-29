@@ -8,20 +8,10 @@ class PortfolioView:
         print("\n=== Portfolio Tracker ===")
         print("1. Add Asset")
         print("2. View Current & Historical Prices")
-        print("3. View Portfolio Overview")
-        print("4. Display portfolio weights")
+        print("3. View Transactions Overview")
+        print("4. View Portfolio Overview (weigths)")
         print("5. Run Simulation")
         print("Q. Quit")
-
-    def show_prices(self, assets):
-        # print current price and plot price history of the asset
-        seen = set()
-        for asset in assets:
-            ticker = asset['ticker']
-            if ticker not in seen:
-                seen.add(ticker)
-                print(f"\n{ticker} - Current Price: €{asset['current_price']:.2f}")
-                self.plot_price_history(ticker)
 
     def plot_price_history(self, ticker):
         # function that plots the price history
@@ -34,7 +24,7 @@ class PortfolioView:
 
     def display_portfolio(self, df: pd.DataFrame):
         # Displays the current portfolio
-        print("\n=== Portfolio Overview ===")
+        print("\n=== Transactions Overview ===")
         print(df)
         # Current portfolio value
         total_value = df['current_value'].sum()
@@ -57,10 +47,11 @@ class PortfolioView:
         current_value = df['current_value'].sum()
         # Risk measure, sort of similar to a VaR, which refers to a loss distribution
         adjusted_VaR = PortfolioModel.risk_measure(simulation_results, alpha)
-        print(f"\nWith {100*alpha}% probability, your portfolio value in 15 years will not be smaller than {adjusted_VaR}.")
+        print(f"\nWith {100*alpha}% probability, your portfolio value in 15 years will not be smaller than €{adjusted_VaR}.")
         print(f"Note that the current value of your portfolio is equal to €{current_value:,.2f}.")
         
     def display_weight_summary(self, summary_df, level):
+        # Display portfolio including weigths
         if level == 'pf':
             print(f"\n=== Portfolio Breakdown at portfolio level ===")
             print(summary_df.to_string(index=False))
@@ -70,3 +61,44 @@ class PortfolioView:
         if level == 'sec':
             print(f"\n=== Portfolio Breakdown at sector level ===")
             print(summary_df.to_string(index=False))
+
+    def get_single_ticker_choice(self, valid_tickers):
+        # Get the single ticker for price inspection
+        while True:
+            ticker = input("Enter the ticker you'd like to inspect: ").upper().strip()
+            if ticker in valid_tickers:
+                return ticker
+            print(f"'{ticker}' is not in your portfolio. Available tickers: {', '.join(valid_tickers)}")
+
+    def get_multiple_ticker_choices(self, valid_tickers):
+        # Get multiple tickers for price inspection
+        while True:
+            tickers_input = input("Enter tickers separated by commas (e.g. AAPL,MSFT,GOOGL): ").upper()
+            tickers = [ticker.strip() for ticker in tickers_input.split(",") if ticker.strip()]
+            if not tickers:
+                print("No tickers entered. Please try again.")
+            elif any(t not in valid_tickers for t in tickers):
+                invalid = [t for t in tickers if t not in valid_tickers]
+                print(f"Invalid tickers: {', '.join(invalid)}. Available: {', '.join(valid_tickers)}")
+            elif len(tickers) > len(valid_tickers):
+                print(f"You entered more tickers than are available in the portfolio. Max allowed: {len(valid_tickers)}")
+            else:
+                return tickers
+
+    def display_current_price(self, ticker, price):
+        print(f"\n{ticker} - Current Price: €{price:.2f}")
+
+    def plot_multiple_price_histories(self, tickers):
+        # Plot prices of multiple tickers jointly
+        plt.figure(figsize=(10, 6))
+        for ticker in tickers:
+            data = yf.Ticker(ticker).history(period="1y")
+            plt.plot(data.index, data['Close'], label=ticker)
+        plt.title("Historical Prices - Last 1 Year")
+        plt.xlabel("Date")
+        plt.ylabel("Price")
+        plt.legend()
+        plt.grid(True)
+        plt.legend(loc='center left', bbox_to_anchor=(1, 0.5), title="Tickers")
+        plt.tight_layout(rect=[0, 0, 0.85, 1]) 
+        plt.show()
