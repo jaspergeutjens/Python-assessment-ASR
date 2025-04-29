@@ -1,6 +1,8 @@
 import yfinance as yf
 import pandas as pd
 import numpy as np
+# Note that the datetime package does not need to be included in requirements.txt
+# This package is part of Python's standard library
 from datetime import datetime, timedelta
 
 class PortfolioModel:
@@ -38,13 +40,14 @@ class PortfolioModel:
         results = np.zeros((simulations, len(unique_assets)))
         for idx, (ticker, data) in enumerate(unique_assets.items()):
             mu, sigma = PortfolioModel.estimate_mu_sigma(ticker)
+            # Closed form solution of a Geometric Brownian motion at time T
             final_values = data['current_price'] * np.exp((mu - 0.5 * sigma**2) * years + sigma * np.sqrt(years) * np.random.randn(simulations))
             results[:, idx] = final_values * data['quantity']
         # Return the summed portfolio values
         return np.sum(results, axis=1).flatten()
         
     def estimate_mu_sigma(ticker):
-        # Estimate mu and sigma of a specific asset
+        # Estimate mu and sigma of a specific asset based on historic averages
         end_date = datetime.today()
         # 5 years ago from today, approximately
         start_date = end_date - timedelta(days=5*365)  
@@ -70,3 +73,21 @@ class PortfolioModel:
         # Calculates a risk measure, sort of similar to a VaR, which refers to a loss distribution
         adjusted_VaR = np.percentile(simulation_results, (1 - alpha) * 100)
         return adjusted_VaR
+
+    def get_portfolio_weights(self, level):
+        df = pd.DataFrame(self.assets)
+        total_value = df['current_value'].sum()
+        if level == "pf":
+            df = df.copy()
+            df['weight'] = df['current_value'] / total_value
+            return df[['ticker', 'current_value', 'weight']]
+        elif level == "ac":
+            grouped = df.groupby('asset_class')['current_value'].sum().reset_index()
+            grouped['weight'] = grouped['current_value'] / total_value
+            return grouped
+        elif level == "sec":
+            grouped = df.groupby('sector')['current_value'].sum().reset_index()
+            grouped['weight'] = grouped['current_value'] / total_value
+            return grouped
+        else:
+            raise ValueError("Invalid level. Choose 'pf', 'ac', or 'sec'.")

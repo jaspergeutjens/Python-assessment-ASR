@@ -9,33 +9,9 @@ class PortfolioView:
         print("1. Add Asset")
         print("2. View Current & Historical Prices")
         print("3. View Portfolio Overview")
-        print("4. Run Simulation")
+        print("4. Display portfolio weights")
+        print("5. Run Simulation")
         print("Q. Quit")
-
-    def get_asset_input(self):
-        while True:
-            ticker = input("Please enter the ticker of the asset: ").upper()
-            data = yf.Ticker(ticker).history(period="max")
-            # Ensures that the user cannot enter an invalid ticker
-            if data.empty:
-                print("Invalid or non-existent ticker. Please enter a valid ticker.\n")
-                continue  
-            # If the ticker is valid, let the user enter asset and transaction information
-            try:
-                sector = input("Please enter the corresponding sector: ")
-                asset_class = input("Please enter the corresponding asset class: ")
-                quantity = float(input("Please enter the quantity: "))
-                purchase_price = float(input("Please enter the purchase price: "))
-                return {
-                    'ticker': ticker,
-                    'sector': sector,
-                    'asset_class': asset_class,
-                    'quantity': quantity,
-                    'purchase_price': purchase_price
-                }
-            except ValueError:
-                print("Invalid numeric input. Please try again.\n")
-                continue
 
     def show_prices(self, assets):
         # print current price and plot price history of the asset
@@ -83,4 +59,14 @@ class PortfolioView:
         adjusted_VaR = PortfolioModel.risk_measure(simulation_results, alpha)
         print(f"\nWith {100*alpha}% probability, your portfolio value in 15 years will not be smaller than {adjusted_VaR}.")
         print(f"Note that the current value of your portfolio is equal to €{current_value:,.2f}.")
-
+        
+    def display_weight_summary(self, summary_df, level):
+        if level == 'pf':
+            print(f"\n=== Portfolio Breakdown at portfolio level ===")
+            print(summary_df.to_string(index=False))
+        if level == 'ac':
+            print(f"\n=== Portfolio Breakdown at asset class level ===")
+            print(summary_df.to_string(index=False))
+        if level == 'sec':
+            print(f"\n=== Portfolio Breakdown at sector level ===")
+            print(summary_df.to_string(index=False))

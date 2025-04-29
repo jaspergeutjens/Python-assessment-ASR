@@ -1,5 +1,6 @@
 from model.portfolio_model import PortfolioModel
 from view.portfolio_view import PortfolioView
+import yfinance as yf
 
 class PortfolioController:
     def __init__(self):
@@ -18,6 +19,8 @@ class PortfolioController:
             elif choice == "3":
                 self.view_portfolio()
             elif choice == "4":
+                self.view_portfolio_calculation()
+            elif choice == "5":
                 self.simulate_portfolio()
             elif choice.lower() in {"q", "quit"}:
                 print("Goodbye!")
@@ -26,7 +29,31 @@ class PortfolioController:
                 print("Invalid choice, please enter a correct value.")
 
     def add_asset(self):
-        asset_data = self.view.get_asset_input()
+        # asset_data = self.view.get_asset_input()
+        while True:
+            ticker = input("Please enter the ticker of the asset: ").upper()
+            data = yf.Ticker(ticker).history(period="max")
+            # Ensures that the user cannot enter an invalid ticker
+            if data.empty:
+                print("Invalid or non-existent ticker. Please enter a valid ticker.\n")
+                continue  
+            # If the ticker is valid, let the user enter asset and transaction information
+            try:
+                sector = input("Please enter the corresponding sector: ")
+                asset_class = input("Please enter the corresponding asset class: ")
+                quantity = float(input("Please enter the quantity: "))
+                purchase_price = float(input("Please enter the purchase price: "))
+                asset_data = {
+                    'ticker': ticker,
+                    'sector': sector,
+                    'asset_class': asset_class,
+                    'quantity': quantity,
+                    'purchase_price': purchase_price
+                }
+                break
+            except ValueError:
+                print("Invalid numeric input. Please try again.\n")
+                continue
         self.model.add_asset(asset_data)
 
     def view_prices(self):
@@ -36,11 +63,19 @@ class PortfolioController:
     def view_portfolio(self):
         self.model.update_prices()
         self.view.display_portfolio(self.model.get_portfolio_summary())
+    
+    def view_portfolio_calculation(self):
+        self.model.update_prices()  # Always make sure prices are fresh
+        level = input("Choose level to view weights (choose, pf for portfolio, ac for asset class, sec for sector): ").strip().lower()
+        try:
+            summary_df = self.model.get_portfolio_weights(level)  # Pass input to model
+            self.view.display_weight_summary(summary_df, level)
+        except ValueError as e:
+            print(f"Error: {e}")
 
     def simulate_portfolio(self):
         self.model.update_prices()
         simulation_results = self.model.simulate()
-        # Allows the user to specify the confidence level for the risk measure
         while True:
             try:
                 alpha = float(input("Please enter the alpha/confidence level for the risk measure (e.g., 0.99 for 99% confidence): ").strip())
